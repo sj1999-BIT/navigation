@@ -41,7 +41,7 @@ def images_to_video(image_folder, output_file, fps=30):
 
 def create_videos_from_observations(base_folder="./test", fps=30):
     """Create videos from all observation types"""
-    folders = ["rgba", "depth"]
+    folders = ["rgba", "depth", "sem"]
     
     for folder in folders:
         input_folder = os.path.join(base_folder, folder)
@@ -49,3 +49,6 @@ def create_videos_from_observations(base_folder="./test", fps=30):
             output_file = os.path.join(base_folder, f"agent_view_{folder}.mp4")
             print(f"\nProcessing {folder} images...")
             images_to_video(input_folder, output_file, fps)
+            
+if __name__ == "__main__":
+    create_videos_from_observations()

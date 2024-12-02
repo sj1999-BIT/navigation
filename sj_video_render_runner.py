@@ -8,11 +8,13 @@ import multiprocessing
 import os
 import random
 import time
+
+
 from enum import Enum
 
 import numpy as np
 from PIL import Image
-from settings import default_sim_settings, make_cfg
+from sj_settings import default_sim_settings, make_cfg
 
 import habitat_sim
 import habitat_sim.agent

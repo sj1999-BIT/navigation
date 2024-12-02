@@ -7,7 +7,7 @@
 
 import argparse
 
-import video_render_runner as dr
+import sj_video_render_runner as dr
 
 from sj_videoRenderer import create_videos_from_observations
 
