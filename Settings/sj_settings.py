@@ -5,6 +5,8 @@
 import habitat_sim
 import habitat_sim.agent
 
+from Agent.agent_cfg import custom_agent_config
+
 default_sim_settings = {
     # settings shared by example.py and benchmark.py
     "max_frames": 1000,
@@ -64,6 +66,8 @@ def make_cfg(settings):
             "Error: Please upgrade habitat-sim. SimulatorConfig API version mismatch"
         )
     sim_cfg.scene_id = settings["scene"]
+    
+    sim_cfg.create_renderer = True
 
     # define default sensor parameters (see src/esp/Sensor/Sensor.h)
     sensor_specs = []
@@ -206,28 +210,33 @@ def make_cfg(settings):
             channels=1,
         )
         sensor_specs.append(equirect_semantic_sensor_spec)
+        
+    print(f"test: get stop funcition ########################################################")
 
-    # create agent specifications
-    agent_cfg = habitat_sim.agent.AgentConfiguration()
-    agent_cfg.sensor_specifications = sensor_specs
-    agent_cfg.action_space = {
-        "move_forward": habitat_sim.agent.ActionSpec(
-            "move_forward", habitat_sim.agent.ActuationSpec(amount=0.25)
-        ),
-        "turn_left": habitat_sim.agent.ActionSpec(
-            "turn_left", habitat_sim.agent.ActuationSpec(amount=10.0)
-        ),
-        "turn_right": habitat_sim.agent.ActionSpec(
-            "turn_right", habitat_sim.agent.ActuationSpec(amount=10.0)
-        ),
-    }
+#     # create agent specifications
+#     agent_cfg = habitat_sim.agent.AgentConfiguration()
+#     agent_cfg.sensor_specifications = sensor_specs
+#     agent_cfg.action_space = {
+#         "move_forward": habitat_sim.agent.ActionSpec(
+#             "move_forward", habitat_sim.agent.ActuationSpec(amount=0.25)
+#         ),
+#         "turn_left": habitat_sim.agent.ActionSpec(
+#             "turn_left", habitat_sim.agent.ActuationSpec(amount=10.0)
+#         ),
+#         "turn_right": habitat_sim.agent.ActionSpec(
+#             "turn_right", habitat_sim.agent.ActuationSpec(amount=10.0)
+#         ),
+#         "stop": habitat_sim.agent.ActionSpec(
+#             "stop", habitat_sim.agent.ActuationSpec(amount=0.0)
+#         )
+#     }
 
-    # override action space to no-op to test physics
-    if sim_cfg.enable_physics:
-        agent_cfg.action_space = {
-            "move_forward": habitat_sim.agent.ActionSpec(
-                "move_forward", habitat_sim.agent.ActuationSpec(amount=0.0)
-            )
-        }
+#     # override action space to no-op to test physics
+#     if sim_cfg.enable_physics:
+#         agent_cfg.action_space = {
+#             "move_forward": habitat_sim.agent.ActionSpec(
+#                 "move_forward", habitat_sim.agent.ActuationSpec(amount=0.0)
+#             )
+#         }
 
-    return habitat_sim.Configuration(sim_cfg, [agent_cfg])
+    return habitat_sim.Configuration(sim_cfg, [custom_agent_config(sensor_specs)])
