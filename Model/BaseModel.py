@@ -3,6 +3,11 @@ import random
 from abc import ABC, abstractmethod
 # from habitat_sim.simulator.Sensor import get_observation
 
+
+"""
+define models to be able to react to surroundings and determine the next action to take.
+"""
+
 class BaseModel(ABC):
     @abstractmethod
     def action(self, observation, action_list):

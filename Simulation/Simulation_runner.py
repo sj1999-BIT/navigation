@@ -1,25 +1,20 @@
-import math
-import multiprocessing
 import os
 import random
 import time
-
 
 from enum import Enum
 
 import numpy as np
 from PIL import Image
-from sj_settings import default_sim_settings, make_cfg
-from Model import RandomActionModel
+from Settings.sj_settings import default_sim_settings, make_cfg
+from Model.BaseModel import RandomActionModel
 
 import habitat_sim
 import habitat_sim.agent
 import habitat_sim.utils.datasets_download as data_downloader
 from habitat_sim.nav import ShortestPath
 from habitat_sim.physics import MotionType
-from habitat_sim.utils.common import d3_40_colors_rgb, quat_from_angle_axis
-
-from habitat_sim.utils.viz_utils import observation_to_image
+from habitat_sim.utils.common import d3_40_colors_rgb
 
 """
 Idea: a simple runner APT for that can take in an agent instruction and travel in the habitat simulator
@@ -39,19 +34,19 @@ class ABTestGroup(Enum):
     TEST = 2
 
 
-class DemoRunner:
+class ModelControlledRunner:
     # modify to have default initiate sim setting
     def __init__(self, sim_settings=default_sim_settings, simulator_demo_type=DemoRunnerType.EXAMPLE):
         if simulator_demo_type == DemoRunnerType.EXAMPLE:
             self.set_sim_settings(sim_settings)
         self._demo_type = simulator_demo_type
-        
+
         # shuijie defined model
         self._defined_model = RandomActionModel()
-        
+
         # need to initialise
         self.current_observation = None
-        
+
     ################ Data output functions #########################################################################
     def _create_output_directories(self):
         """Create directories for storing different types of observations"""
@@ -76,7 +71,7 @@ class DemoRunner:
         for directory in directories:
             os.makedirs(directory, exist_ok=True)
             print(f"Created directory: {directory}")
-            
+
     def save_color_observation(self, obs, total_frames):
         color_obs = obs["color_sensor"]
         color_img = Image.fromarray(color_obs, mode="RGBA")
@@ -88,7 +83,7 @@ class DemoRunner:
                 color_img.save("./test/rgba/test/%05d.png" % total_frames)
         else:
             color_img.save("./test/rgba/%05d.png" % total_frames)
-            
+
     def save_semantic_observation(self, obs, total_frames):
         semantic_obs = obs["semantic_sensor"]
         semantic_img = Image.new("P", (semantic_obs.shape[1], semantic_obs.shape[0]))
@@ -124,13 +119,12 @@ class DemoRunner:
             pixel_ratio = count / total_count
             if pixel_ratio > 0.01:
                 print(f"obj_id:{sem_obj.id},category:{cat},pixel_ratio:{pixel_ratio}")
-                
-                
+
     ################ Agent functions #########################################################################
-    
+
     def set_sim_settings(self, sim_settings):
         self._sim_settings = sim_settings.copy()
-    
+
     def init_common(self):
         """
        Initialize the common components of the simulator environment.
@@ -153,7 +147,7 @@ class DemoRunner:
            - Navigation mesh recomputation can be forced via sim_settings["recompute_navmesh"]
            - Uses default NavMesh settings when recomputing
        """
-        
+
         self._sim_settings["semantic_sensor"] = True
         self._sim_settings["print_semantic_scene"] = True
         print(self._sim_settings)
@@ -161,8 +155,8 @@ class DemoRunner:
         scene_file = self._sim_settings["scene"]
 
         if (
-            not os.path.exists(scene_file)
-            and scene_file == default_sim_settings["scene"]
+                not os.path.exists(scene_file)
+                and scene_file == default_sim_settings["scene"]
         ):
             print(
                 "Test scenes not downloaded locally, downloading and extracting now..."
@@ -183,11 +177,10 @@ class DemoRunner:
             navmesh_settings = habitat_sim.NavMeshSettings()
             navmesh_settings.set_defaults()
             self._sim.recompute_navmesh(self._sim.pathfinder, navmesh_settings)
-            
+
         # initialize the agent at a random start state
         return self.init_agent_state(self._sim_settings["default_agent"])
-    
-        
+
     def init_agent_state(self, agent_id):
         """
         Initialize an agent with a random starting position on the first floor of the environment.
@@ -206,7 +199,7 @@ class DemoRunner:
         Example:
             initial_state = env.init_agent_state("agent_0")
         """
-        
+
         # initialize the agent at a random start state
         agent = self._sim.initialize_agent(agent_id)
         start_state = agent.get_state()
@@ -227,7 +220,7 @@ class DemoRunner:
             )
 
         return start_state
-    
+
     def compute_shortest_path(self, start_pos, end_pos):
         """
         Calculate the shortest path between two points using the simulator's pathfinder.
@@ -248,7 +241,7 @@ class DemoRunner:
         self._shortest_path.requested_end = end_pos
         self._sim.pathfinder.find_path(self._shortest_path)
         print("shortest_path.geodesic_distance", self._shortest_path.geodesic_distance)
-        
+
     def get_agent_actions(self):
         """
         Retrieve the list of available actions for the default agent.
@@ -263,7 +256,7 @@ class DemoRunner:
         return list(
             self._cfg.agents[self._sim_settings["default_agent"]].action_space.keys()
         )
-        
+
     def do_time_steps(self):
         """
         Execute the main simulation loop, performing physics updates and observations for a specified number of frames.
@@ -315,24 +308,21 @@ class DemoRunner:
         time_per_step = []
 
         while total_frames < self._sim_settings["max_frames"]:
-            
+
             if total_frames == 1:
                 start_time = time.time()
-                
+
             # pass current state into the model to get an action
             state = self._sim.last_state()
-            
+
             # initialise the observation, for now just turn left abit
-            if self.current_observation is None:       
+            if self.current_observation is None:
                 self.current_observation = self._sim.step("turn_left")
-                
+
             action = self._defined_model.action(self.current_observation, action_names)
-            
-            
+
             # testing out the state
-            
-            
-            
+
             if not self._sim_settings["silent"]:
                 print("action", action)
 
@@ -351,18 +341,16 @@ class DemoRunner:
 
             # get "interaction" time
             total_sim_step_time += time.time() - start_step_time
-            
-            
 
             observations = self._sim.step(action)
-            
+
             time_per_step.append(time.time() - start_step_time)
 
             # get simulation step time without sensor observations
             total_sim_step_time += self._sim._previous_step_time
 
             # print(f"test {is_save} ######################################################")
-            # if self._sim_settings["save_png"]                
+            # if self._sim_settings["save_png"]
             #     if self._sim_settings["color_sensor"]:
             #         self.save_color_observation(observations, total_frames)
             #     if self._sim_settings["depth_sensor"]:
@@ -370,7 +358,7 @@ class DemoRunner:
             #     if self._sim_settings["semantic_sensor"]:
             #         self.save_semantic_observation(observations, total_frames)
             print(f"test saving image ######################################################")
-            
+
             # no semantics for now
             self.save_semantic_observation(observations, total_frames)
             self.save_depth_observation(observations, total_frames)
@@ -393,8 +381,8 @@ class DemoRunner:
                 print("len(action_path)", len(self._action_path))
 
             if (
-                self._sim_settings["semantic_sensor"]
-                and self._sim_settings["print_semantic_mask_stats"]
+                    self._sim_settings["semantic_sensor"]
+                    and self._sim_settings["print_semantic_mask_stats"]
             ):
                 self.output_semantic_mask_stats(observations, total_frames)
 
@@ -408,7 +396,7 @@ class DemoRunner:
         perf["avg_sim_step_time"] = total_sim_step_time / total_frames
 
         return perf
-    
+
     def run(self):
         """
        Execute the main simulation workflow from initialization through completion.
@@ -433,7 +421,7 @@ class DemoRunner:
            - Properly closes and deallocates simulator resources on completion
        """
         start_state = self.init_common()
-        
+
         self._create_output_directories()
 
         # initialize and compute shortest path to goal
@@ -458,13 +446,13 @@ class DemoRunner:
         del self._sim
 
         return perf
-    
+
 
 def run_example():
     """
     Run simulation examples and collect performance metrics.
 
-    Executes one or more simulation runs using DemoRunner and reports detailed 
+    Executes one or more simulation runs using DemoRunner and reports detailed
     performance statistics. For multiple runs, calculates and reports averages.
 
     Performance metrics reported:
@@ -484,7 +472,7 @@ def run_example():
     """
     perfs = []
     for _i in range(1):
-        demo_runner = DemoRunner()
+        demo_runner = ModelControlledRunner()
         perf = demo_runner.run()
         perfs.append(perf)
 
@@ -519,27 +507,28 @@ def run_example():
         print("Average frame time: " + str(avg_frame_time))
         print("Average step time: " + str(avg_step_time))
 
+
 def run_test():
-    demo_runner = DemoRunner()
+    demo_runner = ModelControlledRunner()
     start_state = demo_runner.init_common()
     demo_runner._shortest_path = ShortestPath()
     shortestPath = demo_runner.compute_shortest_path(start_state.position, demo_runner._sim_settings["goal_position"])
-    
+
     action_list = demo_runner.get_agent_actions()
     print(f"test: action_list {action_list}")
 
-    
+
 if __name__ == "__main__":
     run_example()
-   
+
 """
 
 
 
 
-   
-   
-   
+
+
+
 
     def init_physics_test_scene(self, num_objects):
         object_position = np.array(
@@ -630,7 +619,7 @@ if __name__ == "__main__":
                 + str(object_init_cell)
             )
 
-    
+
 
     def print_semantic_scene(self):
         if self._sim_settings["print_semantic_scene"]:
@@ -654,7 +643,7 @@ if __name__ == "__main__":
                         )
             input("Press Enter to continue...")
 
-    
+
 
     def _bench_target(self, _idx=0):
         self.init_common()
@@ -712,7 +701,7 @@ if __name__ == "__main__":
             avg_sim_step_time=sum(res["avg_sim_step_time"]) / nprocs,
         )
 
-    
+
 
 """
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/docs/m.css" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/assimp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/bullet3" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/corrade" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/corrade/toolchains" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/eigen" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/glfw" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/magnum" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/magnum-bindings" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/magnum-integration" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/magnum-integration/toolchains" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/magnum-plugins" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/magnum-plugins/toolchains" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/magnum/toolchains" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/openexr" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/pybind11" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/rapidjson" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/rapidjson/thirdparty/gtest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/recastnavigation" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/rlr-audio-propagation" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/tinyobjloader" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/habitat-sim/src/deps/zstd" vcs="Git" />
+  </component>
+</project>
